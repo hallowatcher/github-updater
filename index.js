@@ -7,21 +7,26 @@ const appRoot = app.getAppPath();
 
 const updater = {
 
+    // The callback to run after checking
     callback: null,
     
+    // The configuration
     config: {
         repo: null
     },
 
+    // The update retrieved from github
     update: {
         ver: null,
         source: null
     },
 
+    // Initialize
     init: function (config) {
         this.config = util._extend(this.config, config);
     },
 
+    // Check for an update
     check: function (callback) {
         if (callback) this.callback = callback;
 
@@ -38,9 +43,18 @@ const updater = {
             try {
                 if (!data) throw 'No data was received!';
                 if (data.length === 0) throw 'No releases have been made!';
+                if (!semver.valid(package.version)) throw 'The version specified in package.json is invalid!';
+                if (!semver.valid(data[0].tag_name)) throw 'The latest release has an invalid tag version!';
 
-                if (semver.gt(data[0].tag_name, package.version)) 
-                    this.update.ver = data[0].tag_name;
+                let localVer = semver.clean(package.version);
+                let latestVer = semver.clean(data[0].tag_name);
+
+                if (semver.gt(latestVer, localVer)) {
+                    this.update.ver = latestVer;
+                    this.update.source = data[0].assets
+                                                .find(asset => asset.name.endsWith('update.asar'))
+                                                .browser_download_url;
+                }
 
                 return this.end();
             } catch (e) {
@@ -48,6 +62,11 @@ const updater = {
             }
         });
 
+    },
+
+    // Update
+    update: function () {
+        // Stub
     },
 
     end: function (error) {
