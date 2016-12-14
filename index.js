@@ -5,13 +5,18 @@ const rest = require('restler');
 const semver = require('semver');
 const fs = require('fs');
 
-const appRoot = app.getAppPath();
+const appPath = app.getAppPath();
+const resourcesPath = path.join(appPath, '..');
 const child = require('child_process');
 
 let updaterPath = null;
 
-if (fs.existsSync(path.join(appRoot.slice(0, appRoot.indexOf("resources")), 'updater.exe')))
-    updaterPath = path.join(appRoot.slice(0, appRoot.indexOf("resources")), 'updater.exe');
+if (fs.existsSync(path.join(appPath.slice(0, appPath.indexOf("resources")), 'updater.exe')))
+    updaterPath = path.join(resourcesPath, '..', 'updater.exe');
+
+console.log('appPath: ' + appPath);
+console.log('resourcesPath: ' + resourcesPath);
+console.log('updaterPath: ' + updaterPath);
 
 const updater = {
 
@@ -42,7 +47,7 @@ const updater = {
         if (!this.config.repo) 
             return this.end('The repo has not been defined!')
 
-        let package = require(path.join(appRoot, 'package.json'));
+        let package = require(path.join(appPath, 'package.json'));
         if (!package.version)
             return this.end('This app\'s version could not be detected!');
         
@@ -86,7 +91,7 @@ const updater = {
         rest.get(url).on('complete', (data) => {
             if (data instanceof Error) return this.end('Could not download update!');
 
-            let updateFile = path.join(appRoot, fileName);
+            let updateFile = path.join(resourcesPath, fileName);
             fs.writeFile(updateFile, data, (err) => {
                 if (err) return this.end(err);
 
@@ -104,10 +109,10 @@ const updater = {
     apply: function (callback) {
         if (callback) this.callback = callback;
 
-        if (!appRoot.endsWith('.asar')) return this.end('Please build the application before trying to apply!');
+        if (!appPath.endsWith('.asar')) return this.end('Please build the application before trying to apply!');
         if (!updaterPath) return this.end('updater.exe not found!');
 
-        let localAsar = appRoot;
+        let localAsar = appPath;
         let updateAsar = this.update.file;
 
         if (!fs.existsSync(updateAsar)) return this.end('Update file does not exist!');
