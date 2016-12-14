@@ -11,12 +11,8 @@ const child = require('child_process');
 
 let updaterPath = null;
 
-if (fs.existsSync(path.join(appPath.slice(0, appPath.indexOf("resources")), 'updater.exe')))
+if (fs.existsSync(path.join(resourcesPath, '..', 'updater.exe')))
     updaterPath = path.join(resourcesPath, '..', 'updater.exe');
-
-console.log('appPath: ' + appPath);
-console.log('resourcesPath: ' + resourcesPath);
-console.log('updaterPath: ' + updaterPath);
 
 const updater = {
 
