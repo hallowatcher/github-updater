@@ -82,6 +82,8 @@ const updater = {
             fs.writeFile(updateFile, data, (err) => {
                 if (err) return this.end(err);
 
+                fs.rename(updateFile, updateFile + '.asar');
+
                 this.end();
             })
         })
