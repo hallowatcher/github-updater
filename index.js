@@ -38,6 +38,11 @@ const updater = {
             try {
                 if (!data) throw 'No data was received!';
                 if (data.length === 0) throw 'No releases have been made!';
+
+                if (semver.gt(data[0].tag_name, package.version)) 
+                    this.update.ver = data[0].tag_name;
+
+                return this.end();
             } catch (e) {
                 this.end(e);
             }
