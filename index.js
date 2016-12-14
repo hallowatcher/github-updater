@@ -4,7 +4,10 @@ const path = require('path');
 const rest = require('restler');
 const semver = require('semver');
 const fs = require('fs');
+
 const appRoot = app.getAppPath();
+const updaterPath = path.join(appRoot, 'updater.exe');
+const child = require('child_process');
 
 const updater = {
 
@@ -19,7 +22,8 @@ const updater = {
     // The update retrieved from github
     update: {
         ver: null,
-        source: null
+        source: null,
+        file: null
     },
 
     // Initialize
@@ -82,11 +86,33 @@ const updater = {
             fs.writeFile(updateFile, data, (err) => {
                 if (err) return this.end(err);
 
-                fs.rename(updateFile, updateFile + '.asar');
+                fs.rename(updateFile, updateFile + '.asar', (err) => {
+                    if (err) return this.end(err);
 
-                this.end();
-            })
-        })
+                    this.update.file = updateFile + '.asar';
+
+                    this.end();
+                });
+            });
+        });
+    },
+
+    apply: function () {
+        if (!appRoot.endsWith('.asar')) return this.end('Please build the application before trying up apply!');
+
+        let localAsar = appRoot;
+        let updateAsar = this.update.file;
+
+        if (!fs.existsSync(updateAsar)) return this.end('Update file does not exist!');
+
+        let winArgs = `${updaterPath} ${updateAsar} ${localAsar}`;
+        if (process.platform === 'win32') {
+            child.spawn('cmd', ['/s', '/c', `"${winArgs}"`], { detached: true, windowsVerbatimArguments: true, stdio: 'ignore' });
+            child.unref();
+            app.quit();   
+        } else {
+            return this.end('Only windows supported for now!');
+        }
     },
 
     end: function (error) {
