@@ -3,6 +3,7 @@ const util = require('util');
 const path = require('path');
 const rest = require('restler');
 const semver = require('semver');
+const fs = require('fs');
 const appRoot = app.getAppPath();
 
 const updater = {
@@ -66,8 +67,24 @@ const updater = {
     },
 
     // Update
-    download: function () {
-        // Stub
+    download: function (callback) {
+        if (callback) this.callback = callback;
+
+        if (!this.update.ver || !this.update.source) return this.end('No updates in queue!');
+
+        let url = this.update.source;
+        let fileName = 'update.asar';
+
+        rest.get(url).on('complete', (data) => {
+            if (data instanceof Error) return this.end('Could not download update!');
+
+            let updateFile = path.join(appRoot, fileName);
+            fs.writeFile(updateFile, data, (err) => {
+                if (err) return this.end('Error writing update file!');
+
+                this.end();
+            })
+        })
     },
 
     end: function (error) {
