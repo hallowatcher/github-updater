@@ -6,8 +6,13 @@ const semver = require('semver');
 const fs = require('fs');
 
 const appRoot = app.getAppPath();
-const updaterPath = path.join(appRoot, 'updater.exe');
+const updaterPath = null;
 const child = require('child_process');
+
+if (fs.existsSync(path.join(appRoot, 'updater.exe')))
+    updaterPath = path.join(appRoot, 'updater.exe');
+else if (fs.existsSync(path.join(appRoot.slice(0, appRoot.indexOf("resources")), 'updater.exe')))
+    updaterPath = path.join(appRoot.slice(0, appRoot.indexOf("resources")), 'updater.exe');
 
 const updater = {
 
@@ -99,6 +104,7 @@ const updater = {
 
     apply: function () {
         if (!appRoot.endsWith('.asar')) return this.end('Please build the application before trying up apply!');
+        if (!updaterPath) return this.end('updater.exe not found!');
 
         let localAsar = appRoot;
         let updateAsar = this.update.file;
