@@ -101,7 +101,9 @@ const updater = {
         });
     },
 
-    apply: function () {
+    apply: function (callback) {
+        if (callback) this.callback = callback;
+
         if (!appRoot.endsWith('.asar')) return this.end('Please build the application before trying to apply!');
         if (!updaterPath) return this.end('updater.exe not found!');
 
