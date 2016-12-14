@@ -124,6 +124,7 @@ const updater = {
         if (typeof this.callback !== 'function') return false;
 
         this.callback.call(this, error, this.update.ver);
+        this.callback = null;
     }
 
 }
