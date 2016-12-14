@@ -60,8 +60,8 @@ const updater = {
                 let latestVer = semver.clean(data[0].tag_name);
 
                 if (semver.gt(latestVer, localVer)) {
-                    let asset = data[0].assets.find(asset => asset.name.endsWith('update.asar'));
-                    if (!asset) throw 'The latest version has no asset that ends with "update.asar"';
+                    let asset = data[0].assets.find(asset => asset.name.endsWith('.exe'));
+                    if (!asset) throw 'The latest version has no asset that ends with ".exe"';
 
                     this.update.ver = latestVer;
                     this.update.source = asset.browser_download_url;
@@ -82,7 +82,7 @@ const updater = {
         if (!this.update.ver || !this.update.source) return this.end('No updates in queue!');
 
         let url = this.update.source;
-        let fileName = 'update';
+        let fileName = 'update.exe';
 
         rest.get(url).on('complete', (data) => {
             if (data instanceof Error) return this.end('Could not download update!');
@@ -91,13 +91,13 @@ const updater = {
             fs.writeFile(updateFile, data, (err) => {
                 if (err) return this.end(err);
 
-                fs.rename(updateFile, updateFile + '.asar', (err) => {
-                    if (err) return this.end(err);
+                // fs.rename(updateFile, updateFile + '.asar', (err) => {
+                //     if (err) return this.end(err);
 
-                    this.update.file = updateFile + '.asar';
+                    this.update.file = updateFile;
 
                     this.end();
-                });
+                // });
             });
         });
     },
@@ -105,22 +105,28 @@ const updater = {
     apply: function (callback) {
         if (callback) this.callback = callback;
 
-        if (!appPath.endsWith('.asar')) return this.end('Please build the application before trying to apply!');
-        if (!updaterPath) return this.end('updater.exe not found!');
+        //if (!appPath.endsWith('.asar')) return this.end('Please build the application before trying to apply!');
+        //if (!updaterPath) return this.end('updater.exe not found!');
 
-        let localAsar = appPath;
-        let updateAsar = this.update.file;
+        //let localAsar = appPath;
+        let updateExe = this.update.file;
 
-        if (!updateAsar) return this.end('Update file does not exist!');
+        if (!updateExe) return this.end('Update file does not exist!');
 
-        let winArgs = `${updaterPath} ${updateAsar} ${localAsar}`;
-        if (process.platform === 'win32') {
-            child.spawn('cmd', ['/s', '/c', `"${winArgs}"`], { detached: true, windowsVerbatimArguments: true, stdio: 'ignore' });
-            child.unref();
-            app.quit();   
-        } else {
-            return this.end('Only windows supported for now!');
-        }
+        // let winArgs = `${updaterPath} ${updateAsar} ${localAsar}`;
+        // if (process.platform === 'win32') {
+        //     child.spawn('cmd', ['/s', '/c', `"${winArgs}"`], { detached: true, windowsVerbatimArguments: true, stdio: 'ignore' });
+        //     child.unref();
+        //     app.quit();   
+        // } else {
+        //     return this.end('Only windows supported for now!');
+        // }
+
+        updater.quitAndInstall = function(){
+        child.spawn(updateExe, ['/SILENT'], {
+            detached: true,
+            stdio: ['ignore', 'ignore', 'ignore']
+        }).unref();
     },
 
     end: function (error) {
