@@ -1,0 +1,3 @@
+A module to update your app directly through github releases
+
+Readme coming soon...
