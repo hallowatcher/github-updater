@@ -73,7 +73,7 @@ const updater = {
         if (!this.update.ver || !this.update.source) return this.end('No updates in queue!');
 
         let url = this.update.source;
-        let fileName = 'update.asar';
+        let fileName = 'update';
 
         rest.get(url).on('complete', (data) => {
             if (data instanceof Error) return this.end('Could not download update!');
