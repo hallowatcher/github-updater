@@ -80,7 +80,7 @@ const updater = {
 
             let updateFile = path.join(appRoot, fileName);
             fs.writeFile(updateFile, data, (err) => {
-                if (err) return this.end('Error writing update file!');
+                if (err) return this.end(err);
 
                 this.end();
             })
