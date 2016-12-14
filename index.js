@@ -113,20 +113,10 @@ const updater = {
 
         if (!updateExe) return this.end('Update file does not exist!');
 
-        // let winArgs = `${updaterPath} ${updateAsar} ${localAsar}`;
-        // if (process.platform === 'win32') {
-        //     child.spawn('cmd', ['/s', '/c', `"${winArgs}"`], { detached: true, windowsVerbatimArguments: true, stdio: 'ignore' });
-        //     child.unref();
-        //     app.quit();   
-        // } else {
-        //     return this.end('Only windows supported for now!');
-        // }
+        //let winArgs = `${updaterPath} ${updateAsar} ${localAsar}`;
         if (process.platform === 'win32') {
-            child.spawn(updateExe, ['/SILENT'], {
-                detached: true,
-                stdio: ['ignore', 'ignore', 'ignore']
-            }).unref();
-            app.quit();
+            child.spawn('cmd', ['/s', '/c', `"${updateExe}"`], { detached: true, windowsVerbatimArguments: true, stdio: 'ignore' }).unref();
+            app.quit();   
         } else {
             return this.end('Only windows supported for now!');
         }
