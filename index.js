@@ -50,10 +50,11 @@ const updater = {
                 let latestVer = semver.clean(data[0].tag_name);
 
                 if (semver.gt(latestVer, localVer)) {
+                    let asset = data[0].assets.find(asset => asset.name.endsWith('update.asar'));
+                    if (!asset) throw 'The latest version has no asset that ends with "update.asar"';
+
                     this.update.ver = latestVer;
-                    this.update.source = data[0].assets
-                                                .find(asset => asset.name.endsWith('update.asar'))
-                                                .browser_download_url;
+                    this.update.source = asset.browser_download_url;
                 }
 
                 return this.end();
