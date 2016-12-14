@@ -66,7 +66,7 @@ const updater = {
     },
 
     // Update
-    update: function () {
+    download: function () {
         // Stub
     },
 
