@@ -10,9 +10,7 @@ const child = require('child_process');
 
 let updaterPath = null;
 
-if (fs.existsSync(path.join(appRoot, 'updater.exe')))
-    updaterPath = path.join(appRoot, 'updater.exe');
-else if (fs.existsSync(path.join(appRoot.slice(0, appRoot.indexOf("resources")), 'updater.exe')))
+if (fs.existsSync(path.join(appRoot.slice(0, appRoot.indexOf("resources")), 'updater.exe')))
     updaterPath = path.join(appRoot.slice(0, appRoot.indexOf("resources")), 'updater.exe');
 
 const updater = {
@@ -104,7 +102,7 @@ const updater = {
     },
 
     apply: function () {
-        if (!appRoot.endsWith('.asar')) return this.end('Please build the application before trying up apply!');
+        if (!appRoot.endsWith('.asar')) return this.end('Please build the application before trying to apply!');
         if (!updaterPath) return this.end('updater.exe not found!');
 
         let localAsar = appRoot;
