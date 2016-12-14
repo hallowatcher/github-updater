@@ -6,8 +6,9 @@ const semver = require('semver');
 const fs = require('fs');
 
 const appRoot = app.getAppPath();
-const updaterPath = null;
 const child = require('child_process');
+
+let updaterPath = null;
 
 if (fs.existsSync(path.join(appRoot, 'updater.exe')))
     updaterPath = path.join(appRoot, 'updater.exe');
