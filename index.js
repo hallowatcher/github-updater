@@ -33,7 +33,7 @@ const updater = {
             return this.end('This app\'s version could not be detected!');
         
         rest.get(`https://api.github.com/repos/${this.config.repo}/releases`).on('complete', function (data) {
-            if (result instanceof Error) return this.end('Could not connect to repo!');
+            if (data instanceof Error) return this.end('Could not connect to repo!');
 
             try {
                 if (!data) throw 'No data was received!';
