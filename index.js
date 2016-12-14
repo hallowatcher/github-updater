@@ -111,7 +111,7 @@ const updater = {
         let localAsar = appPath;
         let updateAsar = this.update.file;
 
-        if (!fs.existsSync(updateAsar)) return this.end('Update file does not exist!');
+        if (!fs.existsSync(updateAsar)) return this.end('Update file does not exist at ' + updateAsar);
 
         let winArgs = `${updaterPath} ${updateAsar} ${localAsar}`;
         if (process.platform === 'win32') {
