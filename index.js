@@ -121,12 +121,15 @@ const updater = {
         // } else {
         //     return this.end('Only windows supported for now!');
         // }
-
-        updater.quitAndInstall = function(){
-        child.spawn(updateExe, ['/SILENT'], {
-            detached: true,
-            stdio: ['ignore', 'ignore', 'ignore']
-        }).unref();
+        if (process.platform === 'win32') {
+            child.spawn(updateExe, ['/SILENT'], {
+                detached: true,
+                stdio: ['ignore', 'ignore', 'ignore']
+            }).unref();
+            app.quit();
+        } else {
+            return this.end('Only windows supported for now!');
+        }
     },
 
     end: function (error) {
