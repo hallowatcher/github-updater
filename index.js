@@ -111,8 +111,7 @@ const updater = {
             .pipe(updateFileStream)
             .on('finish', () => {
                 this.update.file = updateFile;
-                setTimeout(this.end, 2000);
-                return;
+                return this.end();
             });
     },
 
