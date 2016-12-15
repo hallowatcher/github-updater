@@ -108,7 +108,7 @@ const updater = {
             .on('error', (error) => {
                 return this.end(error);
             })
-            .pipe(updateFile)
+            .pipe(updateFileStream)
             .on('finish', () => {
                 this.update.file = updateFile;
                 return this.end();
