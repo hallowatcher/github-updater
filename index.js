@@ -4,6 +4,7 @@ const path = require('path');
 const rest = require('restler');
 const semver = require('semver');
 const fs = require('fs');
+const request = require('request');
 
 const appPath = app.getAppPath();
 const resourcesPath = path.join(appPath, '..');
@@ -84,22 +85,34 @@ const updater = {
         let url = this.update.source;
         let fileName = 'update.exe';
 
-        rest.get(url).on('complete', (data) => {
-            if (data instanceof Error) return this.end('Could not download update!');
+        // rest.get(url).on('complete', (data) => {
+        //     if (data instanceof Error) return this.end('Could not download update!');
 
-            let updateFile = path.join(resourcesPath, fileName);
-            fs.writeFile(updateFile, data, (err) => {
-                if (err) return this.end(err);
+        //     let updateFile = path.join(resourcesPath, fileName);
+        //     fs.writeFile(updateFile, data, (err) => {
+        //         if (err) return this.end(err);
 
-                // fs.rename(updateFile, updateFile + '.asar', (err) => {
-                //     if (err) return this.end(err);
+        //         // fs.rename(updateFile, updateFile + '.asar', (err) => {
+        //         //     if (err) return this.end(err);
 
-                    this.update.file = updateFile;
+        //             this.update.file = updateFile;
 
-                    this.end();
-                // });
+        //             this.end();
+        //         // });
+        //     });
+        // });
+
+        let updateFile = path.join(resourcesPath, fileName);
+        let updateFileStream = fs.createWriteStream(updateFile);
+        request.get(url)
+            .on('error', (error) => {
+                return this.end(error);
+            })
+            .pipe(updateFile)
+            .on('finish', () => {
+                this.update.file = updateFile;
+                return this.end();
             });
-        });
     },
 
     apply: function (callback) {
