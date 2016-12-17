@@ -1,33 +1,27 @@
-const app = require('electron').app;
+//const app = require('electron').app;
 const util = require('util');
 const path = require('path');
-const rest = require('restler');
 const semver = require('semver');
 const fs = require('fs');
 const request = require('request');
 
-const appPath = app.getAppPath();
-const resourcesPath = path.join(appPath, '..');
 const child = require('child_process');
-
-let updaterPath = null;
-
-if (fs.existsSync(path.join(resourcesPath, '..', 'updater.exe')))
-    updaterPath = path.join(resourcesPath, '..', 'updater.exe');
 
 const updater = {
 
     // The callback to run after checking
     callback: null,
-    
+
     // The configuration
     config: {
-        repo: null
+        repository: null,
+        version: null,
+        downloadPath: null
     },
 
     // The update retrieved from github
     update: {
-        ver: null,
+        version: null,
         source: null,
         file: null
     },
@@ -41,30 +35,32 @@ const updater = {
     check: function (callback) {
         if (callback) this.callback = callback;
 
-        if (!this.config.repo) 
-            return this.end('The repo has not been defined!')
+        if (!this.config.repository)
+            return this.end('Please specify the repo in the config!')
 
-        let package = require(path.join(appPath, 'package.json'));
-        if (!package.version)
-            return this.end('This app\'s version could not be detected!');
-        
-        rest.get(`https://api.github.com/repos/${this.config.repo}/releases`).on('complete', (data) => {
-            if (data instanceof Error) return this.end('Could not connect to repo!');
+        if (!this.config.version)
+            return this.end('Please specify the version in the config!');
 
+        request.get(`https://api.github.com/repos/${this.config.repository}/releases`, (error, response, body) => {
+            if (error) return this.end('Could not connect to repo!');
+            
             try {
+                var data = JSON.parse(body);
+
                 if (!data) throw 'No data was received!';
                 if (data.length === 0) throw 'No releases have been made!';
-                if (!semver.valid(package.version)) throw 'The version specified in package.json is invalid!';
-                if (!semver.valid(data[0].tag_name)) throw 'The latest release has an invalid tag version!';
+                if (!semver.valid(this.config.version)) throw 'The version specified is invalid!';
+                if (!semver.valid(data[0].tag_name)) throw 'The latest release in github has an invalid tag version!';
 
-                let localVer = semver.clean(package.version);
+                let localVer = semver.clean(this.config.version);
                 let latestVer = semver.clean(data[0].tag_name);
 
                 if (semver.gt(latestVer, localVer)) {
+                    if (!data[0].assets) throw 'The latest version has no assets!';
                     let asset = data[0].assets.find(asset => asset.name.endsWith('.exe'));
                     if (!asset) throw 'The latest version has no asset that ends with ".exe"';
 
-                    this.update.ver = latestVer;
+                    this.update.version = latestVer;
                     this.update.source = asset.browser_download_url;
                 }
 
@@ -85,23 +81,6 @@ const updater = {
         let url = this.update.source;
         let fileName = 'update.exe';
 
-        // rest.get(url).on('complete', (data) => {
-        //     if (data instanceof Error) return this.end('Could not download update!');
-
-        //     let updateFile = path.join(resourcesPath, fileName);
-        //     fs.writeFile(updateFile, data, (err) => {
-        //         if (err) return this.end(err);
-
-        //         // fs.rename(updateFile, updateFile + '.asar', (err) => {
-        //         //     if (err) return this.end(err);
-
-        //             this.update.file = updateFile;
-
-        //             this.end();
-        //         // });
-        //     });
-        // });
-
         let updateFile = path.join(resourcesPath, fileName);
         let updateFileStream = fs.createWriteStream(updateFile);
         request.get(url)
@@ -121,18 +100,12 @@ const updater = {
     apply: function (callback) {
         if (callback) this.callback = callback;
 
-        //if (!appPath.endsWith('.asar')) return this.end('Please build the application before trying to apply!');
-        //if (!updaterPath) return this.end('updater.exe not found!');
-
-        //let localAsar = appPath;
         let updateExe = this.update.file;
-
         if (!updateExe) return this.end('Update file does not exist!');
 
-        //let winArgs = `${updaterPath} ${updateAsar} ${localAsar}`;
         if (process.platform === 'win32') {
             child.spawn('cmd', ['/s', '/c', `"${updateExe}"`], { detached: true, windowsVerbatimArguments: true, stdio: 'ignore' }).unref();
-            app.quit();   
+            this.end();
         } else {
             return this.end('Only windows supported for now!');
         }
