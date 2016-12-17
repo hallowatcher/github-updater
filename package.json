@@ -1,5 +1,5 @@
 {
-  "name": "electron-github-updater",
+  "name": "github-updater",
   "version": "0.0.1",
   "description": "A module to update your app directly through github releases",
   "main": "index.js",
