@@ -11,13 +11,18 @@ const child = require('child_process');
 function Updater(config) {
     EventEmitter.call(this);
 
-    var defaults = {
+    var configDefaults = {
         repository: null,
         version: null,
         downloadPath: null
     };
 
-    this.config = util._extend(defaults, config);
+    this.update = {
+        version: null,
+        source: null
+    };
+
+    this.config = util._extend(configDefaults, config);
 }
 util.inherits(Updater, EventEmitter);
 
@@ -41,7 +46,12 @@ Updater.prototype.checkForUpdates = function () {
                 let asset = data[0].assets.find(asset => asset.name.endsWith('.exe'));
                 if (!asset) throw new Error('The latest version has no asset that ends with ".exe"');
 
-                return this.emit('updates-found', { version: latestVer, source: asset.browser_download_url });
+                this.update = {
+                    version: latestVer,
+                    source: asset.browser_download_url
+                };
+
+                return this.emit('updates-found', this.update);
             }
 
             return this.emit('updates-none');
